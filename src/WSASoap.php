@@ -44,11 +44,12 @@ use RobRichards\XMLSecLibs\XMLSecurityDSig;
  * @copyright 2007-2016 Robert Richards <rrichards@ctindustries.net>
  * @license   http://www.opensource.org/licenses/bsd-license.php  BSD License
  *
- * @version   2.0.1-dev
+ * @version   2.0.0
  */
 class WSASoap
 {
-    const WSANS = 'http://schemas.xmlsoap.org/ws/2004/08/addressing';
+    const WSANS = 'http://www.w3.org/2005/08/addressing';
+    // const WSANS = 'http://schemas.xmlsoap.org/ws/2004/08/addressing';
     const WSAPFX = 'wsa';
     private $soapNS, $soapPFX;
     private $soapDoc = null;
@@ -95,27 +96,25 @@ class WSASoap
         $header->appendChild($nodeAction);
     }
 
-    public function addFrom($location = null)
-    {
-        /* Add the WSA From */
-        $header = $this->locateHeader();
-
-        $nodeFrom = $this->soapDoc->createElementNS(self::WSANS, self::WSAPFX.':From');
-        $header->appendChild($nodeFrom);
-
-        if (empty($location)) {
-        	$location = 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous';
-        }
-        $nodeAddress = $this->soapDoc->createElementNS(self::WSANS, self::WSAPFX.':Address', $location);
-        $nodeFrom->appendChild($nodeAddress);
-    }
-    
     public function addTo($location)
     {
         /* Add the WSA To */
         $header = $this->locateHeader();
-
+        
         $nodeTo = $this->soapDoc->createElementNS(self::WSANS, self::WSAPFX.':To', $location);
+        $nodeTo->setAttributeNS($this->soapNS, $this->soapPFX.':mustUnderstand', '1');
+        $header->appendChild($nodeTo);
+    }
+
+    public function addFrom($location)
+    {
+        /* Add the WSA To */
+        $header = $this->locateHeader();
+
+        $address = $this->soapDoc->createElementNS(self::WSANS, self::WSAPFX.':Address', $location); 
+        $nodeTo = $this->soapDoc->createElementNS(self::WSANS, self::WSAPFX.':From');
+        $nodeTo->appendChild($address);
+
         $header->appendChild($nodeTo);
     }
 
@@ -150,7 +149,7 @@ class WSASoap
         $header->appendChild($nodeReply);
 
         if (empty($address)) {
-            $address = 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous';
+            $address = 'http://schemas.xmlsoap.org/ws/2005/08/addressing/role/anonymous';
         }
         $nodeAddress = $this->soapDoc->createElementNS(self::WSANS, self::WSAPFX.':Address', $address);
         $nodeReply->appendChild($nodeAddress);
